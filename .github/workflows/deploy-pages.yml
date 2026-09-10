@@ -1,0 +1,89 @@
+name: Deploy to GitHub Pages
+
+# Builds the Module Federation remote and publishes dist/ to GitHub Pages, which
+# serves it as a CDN: a Horizon host loads
+#   https://netsapiens.github.io/horizon-pokemon-app/remoteEntry.js
+# GitHub Pages sends `Access-Control-Allow-Origin: *`, so cross-origin loading
+# by the host works. The page itself renders nothing standalone (headless remote).
+#
+# Modeled on horizon-sdk-demo's workflow of the same name, minus its zone
+# manifest check (this app has no Playwright suite to keep in step).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Allow the deploy job to publish to Pages via OIDC.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One in-flight deploy at a time; don't cancel a running publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # the version guard below diffs against the previous commit
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The remote entry URL is stable, so the version field is what tells the
+      # platform to re-verify. Publishing new bytes under an unchanged version
+      # means nothing re-verifies: the platform goes on enforcing the previous
+      # bytes' hash against the new ones at the same URL, every host fails its
+      # integrity check, and the extension silently stops appearing — no verdict,
+      # no finding, nothing in the portal explaining it. Hence a guard, not a
+      # convention. A push that touches only documentation passes untouched.
+      - name: Refuse to ship changed bytes under an unchanged version
+        run: |
+          PREV=$(git show HEAD~1:package.json 2>/dev/null | node -p "try{JSON.parse(require('fs').readFileSync(0,'utf8')).version}catch(e){''}" || echo "")
+          THIS=$(node -p "require('./package.json').version")
+          [ -z "$PREV" ] && exit 0
+          [ "$PREV" != "$THIS" ] && exit 0
+          git diff --quiet HEAD~1 HEAD -- src webpack.config.js package.json package-lock.json && exit 0
+          echo "::error::Bundle inputs changed but the version is still $THIS. Bump it."
+          exit 1
+
+      # babel-loader STRIPS types without checking them, so the bundle builds no
+      # matter how wrong the types are. This is the only gate that reads them.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      # The same checks the platform runs on submission — fail here, not there.
+      - name: Verify bundle
+        run: npm run verify
+
+      # Stop Jekyll from stripping webpack's _-prefixed files.
+      - name: Disable Jekyll
+        run: touch dist/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

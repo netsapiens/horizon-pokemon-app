@@ -1,0 +1,41 @@
+{
+  "name": "@netsapiens/horizon-pokemon-app",
+  "version": "1.0.1",
+  "private": true,
+  "description": "Horizon federated app: a Pokedex page under Apps, served from the public PokeAPI. A Module Federation remote loaded by the Horizon host.",
+  "author": "dwang",
+  "scripts": {
+    "dev": "webpack serve --mode development",
+    "start": "webpack serve --mode development",
+    "build": "webpack --mode production",
+    "verify": "horizon-verify-bundle ./dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@netsapiens/horizon-sdk": "^0.2.11",
+    "loglevel": "^1.9.2",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "@babel/preset-react": "^7.22.0",
+    "@babel/preset-typescript": "^7.23.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "babel-loader": "^9.1.3",
+    "html-webpack-plugin": "^5.5.3",
+    "typescript": "^5.5.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.2.1",
+    "webpack-subresource-integrity": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
+}

@@ -1,0 +1,39 @@
+name: Checks
+
+# Typecheck on every push and pull request.
+#
+# tsc is the point of this workflow. The build runs through babel-loader with
+# @babel/preset-typescript, which STRIPS types without checking them — so the
+# bundle compiles regardless of how wrong the types are, and nothing in the
+# deploy path would otherwise notice. The SDK's compile-time guarantees (a
+# mistyped scope tier being a build error, for one) only hold if this runs.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
