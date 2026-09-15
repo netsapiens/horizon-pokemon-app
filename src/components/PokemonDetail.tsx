@@ -1,6 +1,7 @@
 /**
  * The detail panel above the grid: official artwork, Pokedex description,
- * types, physical stats and base stats for the selected Pokemon.
+ * types, physical stats and base stats for the selected Pokemon — plus the one
+ * action this app offers, adopting that artwork as the user's avatar.
  *
  * The vCon app puts its player in a strip above its grid for the same reason —
  * the reader keeps their place in the list while the detail opens.
@@ -8,6 +9,11 @@
 import { useState } from 'react';
 import { useHorizonContext } from '@netsapiens/horizon-sdk';
 
+import {
+  avatarTargetFor,
+  describeAvatarFailure,
+  setUserAvatar,
+} from '../api/avatarApi';
 import { dexNumber, type PokemonDetail as Detail } from '../api/pokeApi';
 
 interface PokemonDetailProps {
@@ -18,12 +24,27 @@ interface PokemonDetailProps {
 /** The highest base stat the games produce, near enough for a meter. */
 const STAT_CEILING = 255;
 
+/**
+ * The outcome of an avatar upload, tagged with the Pokemon it was for.
+ *
+ * The tag is the point: this panel stays mounted when the selection changes,
+ * so an untagged "Avatar updated" would still be sitting there under the next
+ * Pokemon's name, claiming something that never happened. Same reason the
+ * artwork URL below is derived from props rather than initialised from them.
+ */
+interface AvatarResult {
+  id: number;
+  ok: boolean;
+  message: string;
+}
+
 export default function PokemonDetail({
   detail,
   onClose,
 }: PokemonDetailProps) {
-  const { ui } = useHorizonContext();
-  const { Paper, Stack, Typography, Chip, Box, Button, Divider } = ui ?? {};
+  const { api, ui, user } = useHorizonContext();
+  const { Paper, Stack, Typography, Chip, Box, Button, Divider, Alert } =
+    ui ?? {};
 
   // Derived from props, NOT initialised from them: `useState(detail.artworkUrl)`
   // runs its initializer once, and this panel stays mounted when the selection
@@ -34,6 +55,39 @@ export default function PokemonDetail({
   const [artworkMissing, setArtworkMissing] = useState<number | null>(null);
   const source =
     artworkMissing === detail.id ? detail.spriteUrl : detail.artworkUrl;
+
+  const [uploadingId, setUploadingId] = useState<number | null>(null);
+  const [result, setResult] = useState<AvatarResult | null>(null);
+
+  const target = avatarTargetFor(user);
+  const uploading = uploadingId === detail.id;
+  const shownResult = result?.id === detail.id ? result : null;
+
+  const adoptAsAvatar = async () => {
+    if (!api || !target) {
+      return;
+    }
+
+    const id = detail.id;
+
+    setUploadingId(id);
+    setResult(null);
+
+    try {
+      // Uploads exactly what the panel is showing — artwork, or the sprite
+      // fallback when a form has no artwork.
+      await setUserAvatar(api, target, source, `${detail.name}.png`);
+      setResult({
+        id,
+        ok: true,
+        message: `${detail.label} is now your avatar. The top bar picks it up on the next page load.`,
+      });
+    } catch (error: unknown) {
+      setResult({ id, ok: false, message: describeAvatarFailure(error) });
+    } finally {
+      setUploadingId((current) => (current === id ? null : current));
+    }
+  };
 
   if (!Paper || !Stack || !Typography || !Box) {
     return null;
@@ -90,8 +144,34 @@ export default function PokemonDetail({
                 </Typography>
               ) : null}
             </Stack>
-            {Button ? <Button onClick={onClose}>Close</Button> : null}
+
+            {Button ? (
+              <Stack direction='row' spacing={1} flexShrink={0}>
+                <Button
+                  onClick={adoptAsAvatar}
+                  disabled={uploading || !api || !target}
+                >
+                  {uploading ? 'Setting...' : 'Set as my avatar'}
+                </Button>
+                <Button variant='text' onClick={onClose}>
+                  Close
+                </Button>
+              </Stack>
+            ) : null}
           </Stack>
+
+          {!target ? (
+            <Typography variant='caption' color='text.secondary'>
+              Setting an avatar needs a signed-in extension; this session does
+              not have one.
+            </Typography>
+          ) : null}
+
+          {shownResult && Alert ? (
+            <Alert severity={shownResult.ok ? 'success' : 'error'}>
+              {shownResult.message}
+            </Alert>
+          ) : null}
 
           {Chip ? (
             <Stack direction='row' spacing={1} flexWrap='wrap' useFlexGap>

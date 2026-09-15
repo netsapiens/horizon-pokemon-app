@@ -16,6 +16,8 @@ CDN, one registration row, no server-side component anywhere.
   calls.
 - Clicking a card opens a detail panel above the grid: official artwork, the
   English Pokedex entry, genus, types, height/weight, abilities and base stats.
+- **Set as my avatar** on the detail panel uploads that artwork as the
+  signed-in user's avatar, through the host's audited API proxy.
 - Every visible element comes from `horizonContext.ui`, so the page re-themes
   live with the portal's dark/light toggle.
 
@@ -29,8 +31,10 @@ Browser (https://<portal>/apps/pokemon)
        └─ images from https://raw.githubusercontent.com/PokeAPI/sprites/...
 ```
 
-Nothing is proxied and no credential exists: PokeAPI is public HTTPS, so the
-browser calls it directly and a portal host needs no configuration at all. The
+Reads need nothing from the platform: PokeAPI is public HTTPS, so the browser
+calls it directly and a portal host needs no configuration at all. The one
+exception is the avatar button — see below — which is the app's only write, and
+goes through `horizonContext.api` rather than any URL of its own. The
 one thing that changes that is a portal Content-Security-Policy restricting
 `connect-src` / `img-src` — INSTALL.md has the same-origin proxy stanza to fall
 back to, which is the pattern an app talking to a private backend would use
@@ -101,6 +105,32 @@ verification status `none` and renders nowhere until the bundle is deployed and
 verified — the **Deploy** button on the Registered Apps row, or
 `POST /ns-api/v2/ui-extensions/registry/horizon-pokemon/deploy`. INSTALL.md
 sections 2-3 have both, with what the verdict means.
+
+## Setting an avatar
+
+The detail panel's **Set as my avatar** button uploads the artwork you are
+looking at to `POST /domains/{domain}/users/{extension}/avatar` through
+`horizonContext.api`, so the app never sees the user's token and the call is
+attributed to it on the Registered Apps page. `src/api/avatarApi.ts` has the
+contract; three things govern whether it works:
+
+- **The platform's API-write master capability must be enabled** for SDK apps
+  (Platform -> UI SDK Management). With it off, the host's proxy answers 403
+  before the request leaves the browser, and the panel says so.
+- **The image must be square.** The endpoint rejects anything else with a 400
+  rather than letterboxing it. PokeAPI artwork is 475x475 and the sprites are
+  96x96, so both pass — a cropped source would not.
+- **The session needs an extension.** `HorizonUser.extension` is optional; a
+  platform admin who is not a subscriber has no avatar to set, and the button
+  is disabled with a note rather than failing at the API.
+
+The upload is `multipart/form-data` with the field named `file`, because the
+endpoint reads a PHP file upload. The host's api client passes a `FormData`
+body through to `fetch` untouched and sets no `Content-Type`, letting the
+browser write the multipart boundary.
+
+The host's top bar reads the avatar once per page load, so the new picture
+appears on the next load rather than instantly.
 
 ## Releasing an update
 

@@ -14,6 +14,10 @@ it on a portal is therefore two API calls and no files: **register**, then
   `[HorizonAppsLoader]` in the browser console.
 - Browsers reaching the portal can reach `pokeapi.co` and
   `raw.githubusercontent.com`. This is the browser's network, not the server's.
+- For the **Set as my avatar** button only: the API-write master capability
+  enabled for SDK apps, and `avatar` absent from `api_write_deny_resources`.
+  Both are platform-global settings; everything else in the app is read-only
+  against public data and needs neither.
 - A token with write scope. `reseller: *` (platform-global) requires a super
   user; a reseller-scoped token can only create within its own reseller.
 

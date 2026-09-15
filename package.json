@@ -1,6 +1,6 @@
 {
   "name": "@netsapiens/horizon-pokemon-app",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "Horizon federated app: a Pokedex page under Apps, served from the public PokeAPI. A Module Federation remote loaded by the Horizon host.",
   "author": "dwang",
