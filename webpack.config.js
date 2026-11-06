@@ -72,14 +72,14 @@ module.exports = (_env, argv) => {
             eager: false,
           },
           loglevel: { singleton: true, requiredVersion: '^1.9.2', eager: false },
-          // '@netsapiens/horizon-sdk' is intentionally NOT shared: the host registers
+          // '@netsapiens/flow-sdk' is intentionally NOT shared: the host registers
           // react, react-dom, loglevel and i18next and nothing else, so declaring the
           // SDK shared cannot resolve to a host copy. Its provide/consume pair also
           // puts a cycle in the chunk graph that leaves the SRI plugin's integrity
           // placeholders unresolved, failing the build — and the verifier rejects on
           // `sdk-not-shared`. `import: false` is not a workaround.
           //
-          // MUI is intentionally NOT shared either — consume it via horizonContext.ui
+          // MUI is intentionally NOT shared either — consume it via flowContext.ui
           // so the page inherits the host theme.
         },
       }),

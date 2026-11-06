@@ -1,6 +1,6 @@
 {
   "name": "@netsapiens/horizon-pokemon-app",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "private": true,
   "description": "Horizon federated app: a Pokedex page under Apps, served from the public PokeAPI. A Module Federation remote loaded by the Horizon host.",
   "author": "dwang",
@@ -8,11 +8,11 @@
     "dev": "webpack serve --mode development",
     "start": "webpack serve --mode development",
     "build": "webpack --mode production",
-    "verify": "horizon-verify-bundle ./dist",
+    "verify": "flow-verify-bundle ./dist",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@netsapiens/horizon-sdk": "^0.2.11",
+    "@netsapiens/flow-sdk": "^0.3.8",
     "loglevel": "^1.9.2",
     "react": "19.2.0",
     "react-dom": "19.2.0"

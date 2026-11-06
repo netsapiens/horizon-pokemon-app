@@ -1,7 +1,7 @@
 # Horizon Pokemon App
 
 A Horizon federated app (Webpack Module Federation remote, built with
-[`@netsapiens/horizon-sdk`](https://www.npmjs.com/package/@netsapiens/horizon-sdk))
+[`@netsapiens/flow-sdk`](https://www.npmjs.com/package/@netsapiens/flow-sdk))
 that adds a **Pokemon** page to the Horizon portal's **Apps** menu, alongside
 **Example CRM** from [`horizon-sdk-demo`](https://github.com/netsapiens/horizon-sdk-demo).
 
@@ -18,7 +18,7 @@ CDN, one registration row, no server-side component anywhere.
   English Pokedex entry, genus, types, height/weight, abilities and base stats.
 - **Set as my avatar** on the detail panel uploads that artwork as the
   signed-in user's avatar, through the host's audited API proxy.
-- Every visible element comes from `horizonContext.ui`, so the page re-themes
+- Every visible element comes from `flowContext.ui`, so the page re-themes
   live with the portal's dark/light toggle.
 
 ## Architecture
@@ -34,7 +34,7 @@ Browser (https://<portal>/apps/pokemon)
 Reads need nothing from the platform: PokeAPI is public HTTPS, so the browser
 calls it directly and a portal host needs no configuration at all. The one
 exception is the avatar button — see below — which is the app's only write, and
-goes through `horizonContext.api` rather than any URL of its own. The
+goes through `flowContext.api` rather than any URL of its own. The
 one thing that changes that is a portal Content-Security-Policy restricting
 `connect-src` / `img-src` — INSTALL.md has the same-origin proxy stanza to fall
 back to, which is the pattern an app talking to a private backend would use
@@ -110,7 +110,7 @@ sections 2-3 have both, with what the verdict means.
 
 The detail panel's **Set as my avatar** button uploads the artwork you are
 looking at to `POST /domains/{domain}/users/{extension}/avatar` through
-`horizonContext.api`, so the app never sees the user's token and the call is
+`flowContext.api`, so the app never sees the user's token and the call is
 attributed to it on the Registered Apps page. `src/api/avatarApi.ts` has the
 contract; three things govern whether it works:
 
@@ -120,7 +120,7 @@ contract; three things govern whether it works:
 - **The image must be square.** The endpoint rejects anything else with a 400
   rather than letterboxing it. PokeAPI artwork is 475x475 and the sprites are
   96x96, so both pass — a cropped source would not.
-- **The session needs an extension.** `HorizonUser.extension` is optional; a
+- **The session needs an extension.** `FlowUser.extension` is optional; a
   platform admin who is not a subscriber has no avatar to set, and the button
   is disabled with a note rather than failing at the API.
 

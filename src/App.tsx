@@ -6,12 +6,12 @@
  * `ucaas-vendor-dashboard`), which is the placement this app exists to
  * demonstrate. Same shape as horizon-vcon-app, one menu over.
  */
-import type { HorizonContext } from '@netsapiens/horizon-sdk';
+import type { FlowContext } from '@netsapiens/flow-sdk';
 import { useEffect, useMemo, useRef } from 'react';
 import {
-  HorizonContextProvider,
+  FlowContextProvider,
   useRemoteApp,
-} from '@netsapiens/horizon-sdk';
+} from '@netsapiens/flow-sdk';
 
 import PokemonPage from './pages/PokemonPage';
 
@@ -20,27 +20,27 @@ import PokemonPage from './pages/PokemonPage';
 // app row's `webpack_module` must match exactly. Never hardcode it twice.
 declare const __MF_NAME__: string;
 
-export default function App(horizonContext: HorizonContext) {
-  const { sdk } = useRemoteApp(horizonContext, __MF_NAME__);
+export default function App(flowContext: FlowContext) {
+  const { sdk } = useRemoteApp(flowContext, __MF_NAME__);
 
-  // The host rebuilds `horizonContext` on every colour-mode change, `ui`
+  // The host rebuilds `flowContext` on every colour-mode change, `ui`
   // included. The wrapper below is memoized with empty deps to keep a STABLE
   // component identity (re-creating it would unmount the page on every
   // render), so it must read the LATEST context through this ref rather than
   // closing over the one captured at first paint — otherwise `theme` keeps
   // updating while `ui.theme`/`ui.styles` stay on the load-time mode.
-  const contextRef = useRef(horizonContext);
-  contextRef.current = horizonContext;
+  const contextRef = useRef(flowContext);
+  contextRef.current = flowContext;
 
-  // Wrap the page once so it renders with the live HorizonContext available
-  // via useHorizonContext().
+  // Wrap the page once so it renders with the live FlowContext available
+  // via useFlowContext().
   const PokemonPageWithContext = useMemo(
     () =>
       function PokemonPageWithContext() {
         return (
-          <HorizonContextProvider context={contextRef.current}>
+          <FlowContextProvider context={contextRef.current}>
             <PokemonPage />
-          </HorizonContextProvider>
+          </FlowContextProvider>
         );
       },
     [],

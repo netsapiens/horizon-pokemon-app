@@ -1,4 +1,4 @@
-# Kit gaps — `horizonContext.ui`
+# Kit gaps — `flowContext.ui`
 
 Components this app reached for and did not find, what it used instead, and
 what that cost. Recorded while building, when the reasoning was still live.

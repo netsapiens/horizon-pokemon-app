@@ -7,7 +7,7 @@
  * the reader keeps their place in the list while the detail opens.
  */
 import { useState } from 'react';
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import {
   avatarTargetFor,
@@ -42,7 +42,7 @@ export default function PokemonDetail({
   detail,
   onClose,
 }: PokemonDetailProps) {
-  const { api, ui, user } = useHorizonContext();
+  const { api, ui, user } = useFlowContext();
   const { Paper, Stack, Typography, Chip, Box, Button, Divider, Alert } =
     ui ?? {};
 

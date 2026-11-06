@@ -3,11 +3,11 @@
  *
  * Shape: search over the whole dex index (fetched once), a card grid that
  * pages in with Load more, and a detail panel that opens above the grid when a
- * card is picked. Every visible element comes from `horizonContext.ui`, so the
+ * card is picked. Every visible element comes from `flowContext.ui`, so the
  * page re-themes with the host's light/dark toggle.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import {
   dexNumber,
@@ -31,7 +31,7 @@ function isAbort(error: unknown): boolean {
 }
 
 export default function PokemonPage() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { PageTemplate } = ui?.templates ?? {};
   const { Paper, Stack, Typography, Box, SearchField, Button, Alert } = ui ?? {};
 

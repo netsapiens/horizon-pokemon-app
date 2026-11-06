@@ -2,7 +2,7 @@
  * Adopting a Pokemon's artwork as the signed-in user's avatar.
  *
  * This is the app's only WRITE against the platform, and the only place it
- * touches NetSapiens data at all. It goes through `horizonContext.api` — the
+ * touches NetSapiens data at all. It goes through `flowContext.api` — the
  * host-brokered, audited proxy — so the app never sees the user's token and
  * the call is attributed to this app on the Registered Apps page.
  *
@@ -18,7 +18,7 @@
  *     pass; a cropped or letterboxed source would not.
  *   - JPEG, PNG, WebP and GIF only, 20 MB max. Everything is stored as WebP.
  */
-import type { HorizonApiClient, HorizonUser } from '@netsapiens/horizon-sdk';
+import type { FlowApiClient, FlowUser } from '@netsapiens/flow-sdk';
 
 export interface AvatarTarget {
   domain: string;
@@ -27,12 +27,12 @@ export interface AvatarTarget {
 
 /**
  * The avatar path needs a domain AND an extension, and `extension` is optional
- * on `HorizonUser` — a session without one (a platform admin who is not a
+ * on `FlowUser` — a session without one (a platform admin who is not a
  * subscriber) has no avatar to set. Resolving it in one place lets the page
  * disable the control rather than discovering this in a 404.
  */
 export function avatarTargetFor(
-  user: HorizonUser | undefined,
+  user: FlowUser | undefined,
 ): AvatarTarget | null {
   if (!user?.domain || !user?.extension) {
     return null;
@@ -49,7 +49,7 @@ export function avatarTargetFor(
  * official artwork.
  */
 export async function setUserAvatar(
-  api: HorizonApiClient,
+  api: FlowApiClient,
   target: AvatarTarget,
   imageUrl: string,
   filename: string,

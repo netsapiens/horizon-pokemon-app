@@ -6,7 +6,7 @@
  * is fetched only when a card is clicked.
  */
 import { useState } from 'react';
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import {
   artworkUrl,
@@ -26,7 +26,7 @@ export default function PokemonCard({
   selected,
   onSelect,
 }: PokemonCardProps) {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Card, CardContent, Stack, Typography, Box, Icon } = ui ?? {};
 
   // Alternate forms (id > 10000) often have no official artwork; fall back to
